@@ -75,17 +75,19 @@ public class Task {
 		private List<String> headers;
 		private String data;
 
-		public void setTime(Time time) {
-			url = url.replace("{time}", time.toString());
-			data = data.replace("{time}", time.toString());
-		}
+		private Time time;
 
 		public String postRequest() {
 			if (url == null) {
 				throw new RuntimeException("You need set URL!");
 			}
 
-			HttpClient httpClient = new HttpClient(url);
+			HttpClient httpClient;
+			if (this.time != null) {
+				httpClient = new HttpClient(url.replace("{time}", this.time.toString()));
+			} else {
+				httpClient = new HttpClient(url);
+			}
 
 			if (headers != null) {
 				for (String value : headers) {
@@ -95,7 +97,11 @@ public class Task {
 
 			if (data != null) {
 				SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-				httpClient.setData(data.replace("{now}", simpleDateFormat.format(new Date())));
+				if (this.time != null) {
+					httpClient.setData(data.replace("{now}", simpleDateFormat.format(new Date())).replace("{time}", this.time.toString()));
+				} else {
+					httpClient.setData(data.replace("{now}", simpleDateFormat.format(new Date())));
+				}
 			}
 
 			return httpClient.getResult();

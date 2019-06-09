@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -45,8 +46,11 @@ public class Main {
 		new Main().run();
 	}
 
+	private HashMap<String, Date> map = new HashMap<>();
+
 	public void run() {
-		new RinStream();
+		RinStream rinStream = new RinStream();
+		rinStream.setPrefix("[yyyy/MM/dd HH:mm:ss]");
 
 		Configuration config;
 
@@ -119,16 +123,19 @@ public class Main {
 								task.getStartup().getRequest().postRequest();
 							}
 
-							task.setStartTime(new Date());
+							this.map.put(task.getName(), new Date());
 							System.out.println(task.getName() + "(" + task.getIp() + ") のポートが開放されました (起動しました)");
 						} else {
-							task.getShutdown().getRequest().setTime(this.getTimeFromDate(task.getStartTime()));
+							Date date = this.map.get(task.getName());
+							Time time = this.getTimeFromDate(date);
+
+							task.getShutdown().getRequest().setTime(time);
 
 							if (task.getShutdown().isEnabling()) {
 								task.getShutdown().getRequest().postRequest();
 							}
 
-							System.out.println(task.getName() + "(" + task.getIp() + ") のポートが閉鎖されました (シャットダウンしました)");
+							System.out.println(task.getName() + "(" + task.getIp() + ") のポートが閉鎖されました (起動時間: " + time.toString() + ")");
 						}
 					}
 
