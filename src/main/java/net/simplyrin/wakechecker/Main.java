@@ -16,6 +16,7 @@ import net.simplyrin.config.Config;
 import net.simplyrin.rinstream.RinStream;
 import net.simplyrin.wakechecker.utils.Task;
 import net.simplyrin.wakechecker.utils.ThreadPool;
+import net.simplyrin.wakechecker.utils.Version;
 
 /**
  * Created by SimplyRin on 2019/06/08.
@@ -123,6 +124,8 @@ public class Main {
 			tasks.add(task);
 		}
 
+		System.out.println("WakeChecker が起動しました。");
+		System.out.println("ビルド日: " + Version.BUILD_TIME);
 		System.out.println("タスク監視を開始します。");
 
 		for (Task task : tasks) {
