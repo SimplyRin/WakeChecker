@@ -2,7 +2,9 @@ package net.simplyrin.wakechecker.utils;
 
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.URL;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -71,6 +73,8 @@ public class Task {
 	@Data
 	public static class Request {
 		private String url;
+		private List<String> urlList = new ArrayList<>();
+
 		private String type;
 		private List<String> headers;
 		private String data;
@@ -102,6 +106,18 @@ public class Task {
 				} else {
 					httpClient.setData(data.replace("{now}", simpleDateFormat.format(new Date())));
 				}
+			}
+
+			if (urlList.isEmpty() && urlList.size() >= 2) {
+				String lastResult = httpClient.getResult();
+				for (String url : urlList) {
+					try {
+						httpClient.setUrl(new URL(url));
+					} catch (Exception e) {
+					}
+					lastResult = httpClient.getResult();
+				}
+				return lastResult;
 			}
 
 			return httpClient.getResult();

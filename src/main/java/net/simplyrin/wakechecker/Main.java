@@ -73,7 +73,7 @@ public class Main {
 			config.set("Monitoring.One.Startup.Request.Type", "GET");
 
 			config.set("Monitoring.One.Shutdown.Enabling", true);
-			config.set("Monitoring.One.Shutdown.Request.URL", "https://api.yourserver.net/hooks.php");
+			config.set("Monitoring.One.Shutdown.Request.URL", Arrays.asList("https://api.yourserver.net/hooks1.php",  "https://api.yourserver.net/hooks2.php"));
 			config.set("Monitoring.One.Shutdown.Request.Type", "POST");
 			config.set("Monitoring.One.Shutdown.Request.Headers", Arrays.asList("User-Agent:Mozilla/5.0"));
 			config.set("Monitoring.One.Shutdown.Request.Data", "message=Runtime: {time}");
@@ -93,13 +93,29 @@ public class Main {
 			task.setTimeout(config.getInt("Monitoring." + key + ".Timeout"));
 
 			task.getStartup().setEnabling(config.getBoolean("Monitoring." + key + ".Startup.Enabling"));
-			task.getStartup().getRequest().setUrl(config.getString("Monitoring." + key + ".Startup.Request.URL"));
+
+			String startupUrl = config.get("Monitoring." + key + ".Startup.Request.URL").toString();
+			if (startupUrl.startsWith("[") && startupUrl.endsWith("]")) {
+				task.getStartup().getRequest().setUrlList(config.getStringList("Monitoring." + key + ".Startup.Request.URL"));;
+			} else {
+				task.getStartup().getRequest().setUrl(startupUrl);
+			}
+
 			task.getStartup().getRequest().setType(config.getString("Monitoring." + key + ".Startup.Request.Type"));
 			task.getStartup().getRequest().setHeaders(config.getStringList("Monitoring." + key + ".Startup.Request.Headers"));
 			task.getStartup().getRequest().setData(config.getString("Monitoring." + key + ".Startup.Request.Data"));
 
 			task.getShutdown().setEnabling(config.getBoolean("Monitoring." + key + ".Shutdown.Enabling"));
+
 			task.getShutdown().getRequest().setUrl(config.getString("Monitoring." + key + ".Shutdown.Request.URL"));
+
+			String shutdownUrl = config.get("Monitoring." + key + ".Shutdown.Request.URL").toString();
+			if (shutdownUrl.startsWith("[") && shutdownUrl.endsWith("]")) {
+				task.getStartup().getRequest().setUrlList(config.getStringList("Monitoring." + key + ".Shutdown.Request.URL"));;
+			} else {
+				task.getStartup().getRequest().setUrl(shutdownUrl);
+			}
+
 			task.getShutdown().getRequest().setType(config.getString("Monitoring." + key + ".Shutdown.Request.Type"));
 			task.getShutdown().getRequest().setHeaders(config.getStringList("Monitoring." + key + ".Shutdown.Request.Headers"));
 			task.getShutdown().getRequest().setData(config.getString("Monitoring." + key + ".Shutdown.Request.Data"));
