@@ -15,6 +15,7 @@ import net.md_5.bungee.config.Configuration;
 import net.simplyrin.config.Config;
 import net.simplyrin.rinstream.RinStream;
 import net.simplyrin.wakechecker.utils.Task;
+import net.simplyrin.wakechecker.utils.Task.Request;
 import net.simplyrin.wakechecker.utils.ThreadPool;
 import net.simplyrin.wakechecker.utils.Version;
 
@@ -139,7 +140,7 @@ public class Main {
 
 						if (portOpen) {
 							if (task.getStartup().isEnabling()) {
-								task.getStartup().getRequest().postRequest();
+								this.asyncTry(task.getStartup().getRequest());
 							}
 
 							this.map.put(task.getName(), new Date());
@@ -151,7 +152,7 @@ public class Main {
 							task.getShutdown().getRequest().setTime(time);
 
 							if (task.getShutdown().isEnabling()) {
-								task.getShutdown().getRequest().postRequest();
+								this.asyncTry(task.getShutdown().getRequest());
 							}
 
 							System.out.println(task.getName() + "(" + task.getIp() + ") のポートが閉鎖されました (起動時間: " + time.toString() + ")");
@@ -165,6 +166,21 @@ public class Main {
 				}
 			});
 		}
+	}
+
+	public void asyncTry(Request request) {
+		ThreadPool.run(() -> {
+			try {
+				request.postRequest();
+			} catch (Exception e) {
+				System.out.println("接続に失敗しました...。5秒後再接続します...。");
+				try {
+					TimeUnit.SECONDS.sleep(5);
+				} catch (Exception e1) {
+				}
+				this.asyncTry(request);
+			}
+		});
 	}
 
 	public Time getTimeFromDate(Date createdTime) {

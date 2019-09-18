@@ -26,7 +26,7 @@ package net.simplyrin.wakechecker.utils;
 public class Version {
 
 	public static final String BUILD_NUMBER = "";
-	public static final String BUILD_TIME  ="";
-	public static final String POMVERSION = "";
+	public static final String BUILD_TIME  ="2019-09-18 21:15:26";
+	public static final String POMVERSION = "1.2";
 
 }

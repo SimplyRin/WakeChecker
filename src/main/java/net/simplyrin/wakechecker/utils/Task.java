@@ -1,12 +1,17 @@
 package net.simplyrin.wakechecker.utils;
 
+import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import org.apache.commons.io.IOUtils;
 
 import lombok.Data;
 import net.simplyrin.httpclient.HttpClient;
@@ -81,46 +86,51 @@ public class Task {
 
 		private Time time;
 
-		public String postRequest() {
-			if (url == null) {
+		public String postRequest() throws Exception {
+			if (this.url == null) {
 				throw new RuntimeException("You need set URL!");
 			}
 
 			HttpClient httpClient;
 			if (this.time != null) {
-				httpClient = new HttpClient(url.replace("{time}", this.time.toString()));
+				httpClient = new HttpClient(this.url.replace("{time}", this.time.toString()));
 			} else {
-				httpClient = new HttpClient(url);
+				httpClient = new HttpClient(this.url);
 			}
 
-			if (headers != null) {
-				for (String value : headers) {
+			if (this.headers != null) {
+				for (String value : this.headers) {
 					httpClient.addHeader(value.split(":")[0].trim(), value.split(":")[1].trim());
 				}
 			}
 
-			if (data != null) {
+			if (this.data != null) {
 				SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 				if (this.time != null) {
-					httpClient.setData(data.replace("{now}", simpleDateFormat.format(new Date())).replace("{time}", this.time.toString()));
+					httpClient.setData(this.data.replace("{now}", simpleDateFormat.format(new Date())).replace("{time}", this.time.toString()));
 				} else {
-					httpClient.setData(data.replace("{now}", simpleDateFormat.format(new Date())));
+					httpClient.setData(this.data.replace("{now}", simpleDateFormat.format(new Date())));
 				}
 			}
 
-			if (urlList.isEmpty() && urlList.size() >= 2) {
-				String lastResult = httpClient.getResult();
-				for (String url : urlList) {
-					try {
-						httpClient.setUrl(new URL(url));
-					} catch (Exception e) {
-					}
-					lastResult = httpClient.getResult();
+			if (this.urlList.isEmpty() && this.urlList.size() >= 2) {
+				String lastResult = this.getResult(httpClient);
+
+				for (String url : this.urlList) {
+					httpClient.setUrl(new URL(url));
+					lastResult = this.getResult(httpClient);
 				}
 				return lastResult;
 			}
 
-			return httpClient.getResult();
+			return this.getResult(httpClient);
+		}
+
+		private String getResult(HttpClient httpClient) throws Exception {
+			HttpURLConnection httpURLConnection = httpClient.getHttpURLConnection();
+			InputStream inputStream = httpURLConnection.getInputStream();
+			String lastResult = IOUtils.toString(inputStream, Charset.forName("UTF-8"));
+			return lastResult;
 		}
 	}
 
